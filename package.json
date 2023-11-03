@@ -1,0 +1,18 @@
+{
+  "name": "ticketgirl",
+  "version": "1.0.0",
+  "description": "Ticket bot for supporting staff and members.",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "dev": "nodemon main.js --ignore src/db/**/*.json"
+  },
+  "author": "rawrkitsune",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.13.0",
+    "dotenv": "^16.3.1",
+    "lowdb": "^6.1.1",
+    "nodemon": "^3.0.1"
+  }
+}

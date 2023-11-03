@@ -1,0 +1,5 @@
+.git
+.vscode
+.env
+node_modules
+src/db/*.json
