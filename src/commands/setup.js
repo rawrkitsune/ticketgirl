@@ -1,4 +1,4 @@
-const {SlashCommandBuilder,EmbedBuilder,PermissionFlagsBits,ModalBuilder,TextInputStyle,TextInputBuilder,ActionRowBuilder,Events,ChannelType,} = require("discord.js");
+const {SlashCommandBuilder,EmbedBuilder,PermissionFlagsBits,ModalBuilder,TextInputStyle,TextInputBuilder,ActionRowBuilder,Events,ChannelType, Embed,} = require("discord.js");
 require("dotenv").config();
 const client = require("../client/index.js");
 const dbs = new Map();
@@ -9,6 +9,7 @@ const applicationAuthor = {
   iconURL:
     "https://cdn.discordapp.com/app-icons/1163683000182116403/47b74e6c7a59800f5fdfea61f89574e6.png?size=256",
 };
+
 
 // Create database file
 async function getDb(guildId) {
@@ -25,6 +26,13 @@ async function getDb(guildId) {
   return db;
 }
 
+const errorEmbed = new EmbedBuilder()
+  .setTitle('An error has occourred while executing this command.')
+  .setDescription('The tickets system has been already set up and can not be set again. If you think this an issue and you do not know how to solve, please report to my [Official Discord Server](https://discord.com/channels/1165038260792336455/1165041615300210699).')
+  .setColor('Red')
+  .setAuthor(applicationAuthor)
+  .setTimestamp()
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("setup")
@@ -40,7 +48,7 @@ module.exports = {
 
     const modal = new ModalBuilder()
       .setCustomId("setupModal")
-      .setTitle("My Modal");
+      .setTitle("Setup")
       
     const categoryName = new TextInputBuilder()
       .setCustomId("categoryName")
@@ -56,18 +64,11 @@ module.exports = {
     const secondActionRow = new ActionRowBuilder().addComponents(channelName);
     modal.addComponents(firstActionRow, secondActionRow);
 
-    const doneEmbed = new EmbedBuilder()
-      .setTitle("Done!")
-      .setDescription("The tickets system has been set up successfully.")
-      .setAuthor(applicationAuthor)
-      .setColor("Green")
-      .setTimestamp();
-
     if (db.data.category !== null) {
       interaction.reply({
-        content: "This has been already set up.",
+        embeds: [errorEmbed],
         ephemeral: true,
-      });
+      })
       return;
     } else {
       await interaction.showModal(modal);
@@ -92,6 +93,13 @@ module.exports = {
           category: category.id,
           textChannel: text.id,
         };
+
+        const doneEmbed = new EmbedBuilder()
+        .setTitle("Done!")
+        .setDescription(`The tickets system has been set up successfully. Now you can start using /ticket at <#${text.id}> to make sure everything is working good!`)
+        .setColor("Green")
+        .setTimestamp();
+
         await db.write();
 
         await interaction.editReply({ embeds: [doneEmbed] });
