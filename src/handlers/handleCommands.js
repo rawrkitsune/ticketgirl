@@ -1,7 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { Collection, Events } = require("discord.js");
-const dotenv = require("dotenv").config();
 const client = require("../client/index.js");
 const commandsPath = path.join(__dirname, "../commands/");
 const commandFiles = fs

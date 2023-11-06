@@ -1,15 +1,14 @@
-const {SlashCommandBuilder,EmbedBuilder,PermissionFlagsBits,ModalBuilder,TextInputStyle,TextInputBuilder,ActionRowBuilder,Events,ChannelType, Embed,} = require("discord.js");
+const {SlashCommandBuilder,EmbedBuilder,PermissionFlagsBits,ModalBuilder,TextInputStyle,TextInputBuilder,ActionRowBuilder,Events,ChannelType} = require("discord.js");
 require("dotenv").config();
 const client = require("../client/index.js");
 const dbs = new Map();
-const dbDefaults = { category: null, textChannel: null };
+const dbDefaults = { category: null, textChannel: null }; module.exports = dbDefaults;
 const applicationAuthor = {
   name: "TicketGirl",
   url: "https://discord.com/api/oauth2/authorize?client_id=1163683000182116403&permissions=2164335632&scope=bot%20applications.commands",
   iconURL:
     "https://cdn.discordapp.com/app-icons/1163683000182116403/47b74e6c7a59800f5fdfea61f89574e6.png?size=256",
 };
-
 
 // Create database file
 async function getDb(guildId) {
@@ -28,7 +27,7 @@ async function getDb(guildId) {
 
 const errorEmbed = new EmbedBuilder()
   .setTitle('An error has occourred while executing this command.')
-  .setDescription('The tickets system has been already set up and can not be set again. If you think this an issue and you do not know how to solve, please report to my [Official Discord Server](https://discord.com/channels/1165038260792336455/1165041615300210699).')
+  .setDescription('The tickets system has been already set up and can not be set again. If you think this an issue, please, report to my [Official Discord Server](https://discord.com/channels/1165038260792336455/1165041615300210699).')
   .setColor('Red')
   .setAuthor(applicationAuthor)
   .setTimestamp()
