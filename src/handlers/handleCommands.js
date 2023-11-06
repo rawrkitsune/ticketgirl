@@ -1,13 +1,14 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const { Collection, Events, GatewayIntentBits } = require("discord.js");
+const { Collection, Events } = require("discord.js");
 const dotenv = require("dotenv").config();
-const client = require("../client/client.js");
-const commands = new Collection();
+const client = require("../client/index.js");
 const commandsPath = path.join(__dirname, "../commands/");
 const commandFiles = fs
   .readdirSync(commandsPath)
   .filter((file) => file.endsWith(".js"));
+
+const commands = new Collection();
 
 for (const file of commandFiles) {
   const filePath = path.join(commandsPath, file);
@@ -48,3 +49,5 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 });
+
+module.exports = commands

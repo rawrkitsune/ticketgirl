@@ -2,14 +2,22 @@ const {
   SlashCommandBuilder,
   EmbedBuilder,
   PermissionFlagsBits,
+  ModalBuilder,
+  TextInputStyle,
+  TextInputBuilder,
+  ActionRowBuilder,
+  Events,
   ChannelType,
 } = require("discord.js");
-const dotenv = require("dotenv").config();
-const client = require("../client/client.js");
+require("dotenv").config();
+const client = require("../client/index.js");
 const dbs = new Map();
-const dbDefaults = {
-  category: null,
-  textChannel: null
+const dbDefaults = { category: null, textChannel: null };
+const applicationAuthor = {
+  name: "TicketGirl",
+  url: "https://discord.com/api/oauth2/authorize?client_id=1163683000182116403&permissions=2164335632&scope=bot%20applications.commands",
+  iconURL:
+    "https://cdn.discordapp.com/app-icons/1163683000182116403/47b74e6c7a59800f5fdfea61f89574e6.png?size=256",
 };
 
 // Create database file
@@ -19,29 +27,13 @@ async function getDb(guildId) {
   }
   const lowdb = await import("lowdb/node");
   const discordServer = guildId;
-  const db = await lowdb.JSONPreset(`./src/db/${discordServer}.json`, dbDefaults);
+  const db = await lowdb.JSONPreset(
+    `./src/db/${discordServer}.json`,
+    dbDefaults
+  );
   dbs.set(guildId, db);
   return db;
 }
-
-client.login(process.env.DISCORD_TOKEN_ACCESS);
-const setupEmbed = new EmbedBuilder(client)
-  .setTitle("Set up")
-  .setURL("https://example.com")
-  .setDescription(
-    "I'm currently setting up the ticket system, this might take some time if I'm overloaded (which rarely happens). I will create an category for you with the text channel for creating tickets. If needed or wanted, you can change the channel and category name to match with your server design."
-  )
-  .setImage(
-    "https://img.freepik.com/free-vector/abstract-blue-light-pipe-speed-zoom-black-background-technology_1142-9980.jpg"
-  )
-  .setThumbnail(
-    "https://thumbs.dreamstime.com/b/gear-wrench-icon-black-background-black-flat-style-vector-illustration-gear-wrench-icon-black-background-black-flat-170443769.jpg"
-  )
-  .setColor("#00b0f4")
-  .setFooter({
-    text: "TicketGirl",
-  })
-  .setTimestamp();
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -50,40 +42,73 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false),
   async execute(interaction) {
-    if (!interaction.isChatInputCommand()) return;
     const db = await getDb(interaction.guildId);
-    if (
-      !interaction.member.permissions.has(PermissionFlagsBits.Administrator)
-    ) {
-      interaction.reply({content: "Only administrators can perform this command.", ephemeral: true});
-      return;
-    }
+    const interactionAuthor = {
+      text: interaction.user.displayName,
+      iconURL: `https://cdn.discordapp.com/avatars/${interaction.user.id}/${interaction.user.avatar}.png`,
+    };
+
+    const modal = new ModalBuilder()
+      .setCustomId("setupModal")
+      .setTitle("My Modal");
+
+    const categoryName = new TextInputBuilder()
+      .setCustomId("categoryName")
+      .setLabel("Insert a name for the tickets category")
+      .setStyle(TextInputStyle.Short);
+
+    const channelName = new TextInputBuilder()
+      .setCustomId("channelName")
+      .setLabel("Insert a name for the tickets channel")
+      .setStyle(TextInputStyle.Short);
+
+    const firstActionRow = new ActionRowBuilder().addComponents(categoryName);
+    const secondActionRow = new ActionRowBuilder().addComponents(channelName);
+    modal.addComponents(firstActionRow, secondActionRow);
+
+    const doneEmbed = new EmbedBuilder()
+      .setTitle("Done!")
+      .setDescription("The tickets system has been set up successfully.")
+      .setAuthor(applicationAuthor)
+      .setColor("Green")
+      .setTimestamp();
+
     if (db.data.category !== null) {
-      interaction.reply({content: "This has been already set up.", ephemeral: true});
+      interaction.reply({
+        content: "This has been already set up.",
+        ephemeral: true,
+      });
+      return;
+    } else {
+      await interaction.showModal(modal);
+      client.on(Events.InteractionCreate, async (interaction) => {
+        if (!interaction.isModalSubmit()) return;
+        const categoryName =
+          interaction.fields.getTextInputValue("categoryName");
+        const channelName = interaction.fields.getTextInputValue("channelName");
+        await interaction.deferReply({ ephemeral: true });
+        const category = await interaction.guild.channels.create({
+          name: categoryName,
+          type: ChannelType.GuildCategory,
+        });
+        const text = await interaction.guild.channels.create({
+          name: channelName,
+          type: ChannelType.GuildText,
+          parent: category,
+          permissionOverwrites: [],
+        });
+
+        db.data = {
+          category: category.id,
+          textChannel: text.id,
+        };
+        await db.write();
+
+        await interaction.editReply({ embeds: [doneEmbed] });
+      });
       return;
     }
-
-    const category = await interaction.guild.channels.create({
-      name: "🔨| HELP",
-      type: ChannelType.GuildCategory,
-    });
-    const text = await interaction.guild.channels.create({
-      name: "『📩』text-support",
-      type: ChannelType.GuildText,
-      parent: category,
-      permissionOverwrites: [],
-    });
-    db.data = {
-      category: category.id,
-      textChannel: text.id
-    }
-
-    interaction.reply({
-      embeds: [setupEmbed],
-      ephemeral: true
-    })
-
-    await db.write();
-    interaction.reply({content: "Set up successfully.", ephemeral: true})
-    },
+  },
 };
+
+client.login(process.env.DISCORD_TOKEN_ACCESS);

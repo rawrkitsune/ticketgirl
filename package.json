@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "node main.js",
-    "dev": "nodemon main.js --ignore src/db/**/*.json"
+    "dev": "nodemon main.js --ignore src/db/**/*.json",
+    "slash": "nodemon src/handlers/handleSlashCommands.js"
   },
   "author": "rawrkitsune",
   "license": "ISC",
