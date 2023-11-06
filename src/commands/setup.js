@@ -1,14 +1,4 @@
-const {
-  SlashCommandBuilder,
-  EmbedBuilder,
-  PermissionFlagsBits,
-  ModalBuilder,
-  TextInputStyle,
-  TextInputBuilder,
-  ActionRowBuilder,
-  Events,
-  ChannelType,
-} = require("discord.js");
+const {SlashCommandBuilder,EmbedBuilder,PermissionFlagsBits,ModalBuilder,TextInputStyle,TextInputBuilder,ActionRowBuilder,Events,ChannelType,} = require("discord.js");
 require("dotenv").config();
 const client = require("../client/index.js");
 const dbs = new Map();
@@ -51,7 +41,7 @@ module.exports = {
     const modal = new ModalBuilder()
       .setCustomId("setupModal")
       .setTitle("My Modal");
-
+      
     const categoryName = new TextInputBuilder()
       .setCustomId("categoryName")
       .setLabel("Insert a name for the tickets category")
